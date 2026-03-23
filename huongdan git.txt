@@ -1,0 +1,6 @@
+#các lệnh up file 
+git add .
+git commit -m "update"
+git push
+#các lênh tải file
+git pull
