@@ -164,11 +164,20 @@
             const timeStr = new Date(d.timestamp).toLocaleString(undefined, {
                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
             });
+            
+            let displayValue = d.value;
+            // Handle display safely (apply toFixed only if it's a pure number or parseable number)
+            if (displayValue !== null && displayValue !== undefined) {
+                if (!isNaN(displayValue) && displayValue.toString().trim() !== "") {
+                    displayValue = Number(displayValue).toFixed(2);
+                }
+            }
+
             tbody.innerHTML += `
                 <tr>
                     <td class="text-muted ps-4" style="font-family: monospace;">${timeStr}</td>
                     <td><span class="badge rounded-pill bg-light text-dark border border-secondary fw-bold px-3 py-2">${d.device_name}</span></td>
-                    <td class="pe-4 text-end text-primary fw-bold" style="font-size: 1.1em;">${d.value.toFixed(2)}</td>
+                    <td class="pe-4 text-end text-primary fw-bold" style="font-size: 1.1em; word-break: break-word;">${displayValue}</td>
                 </tr>
             `;
         });

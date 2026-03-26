@@ -51,9 +51,15 @@ class SensorDataCreate(BaseModel):
     value: float
 
 class SensorDataResponse(BaseModel):
-    id: int
     device_name: str
-    value: float
+
+    # 🔥 nhận mọi dữ liệu
+    value: str  
+
+    # 🔥 dùng để vẽ biểu đồ (có thể null)
+    value_num: float | None = None
+
     timestamp: datetime
+
     class Config:
         from_attributes = True

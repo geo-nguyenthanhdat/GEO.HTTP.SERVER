@@ -39,7 +39,13 @@ class SensorData(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     device_name = Column(String, ForeignKey("sensors.device_name"), index=True, nullable=False)
-    value = Column(Float, nullable=False)
+
+    # 🔥 dữ liệu gốc (luôn lưu được)
+    value = Column(String, nullable=False)
+
+    # 🔥 dữ liệu số (để vẽ biểu đồ)
+    value_num = Column(Float, nullable=True)
+
     timestamp = Column(DateTime, default=datetime.utcnow)
 
     sensor = relationship("Sensor", back_populates="data")
