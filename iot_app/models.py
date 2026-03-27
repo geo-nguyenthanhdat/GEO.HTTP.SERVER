@@ -46,6 +46,6 @@ class SensorData(Base):
     # 🔥 dữ liệu số (để vẽ biểu đồ)
     value_num = Column(Float, nullable=True)
 
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.now)
 
     sensor = relationship("Sensor", back_populates="data")
