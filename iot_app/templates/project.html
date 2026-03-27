@@ -6,6 +6,7 @@
         <span class="text-muted small">Real-time Data Stream</span>
     </div>
     <div class="d-flex gap-2">
+        <button class="btn btn-success fw-bold shadow-sm" onclick="exportExcel()"><i class="bi bi-file-earmark-excel"></i> Export Excel (CSV)</button>
         <button class="btn btn-primary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#newSensorModal">+ Add Sensor</button>
         <a href="/dashboard" class="btn btn-light shadow-sm fw-bold">&larr; Back</a>
     </div>
@@ -121,6 +122,23 @@
     function setFilter(deviceName) {
         currentFilter = deviceName;
         renderUI();
+    }
+
+    async function exportExcel() {
+        const response = await fetchWithAuth(`/api/projects/${projectId}/export`);
+        if (!response || !response.ok) {
+            alert("Failed to export data");
+            return;
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `project_${projectId}_data.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
     }
 
     function renderUI() {

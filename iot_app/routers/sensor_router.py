@@ -180,3 +180,58 @@ def delete_sensor(
     db.commit()
 
     return {"status": "success", "message": "Sensor deleted"}
+
+
+# ================== EXPORT DATA ==================
+@router.get("/projects/{project_id}/export")
+def export_sensor_data(
+    project_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    from fastapi.responses import StreamingResponse
+    import io
+    import csv
+
+    if current_user.role == "admin":
+        project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    else:
+        project = db.query(models.Project).filter(
+            models.Project.id == project_id,
+            models.Project.user_id == current_user.id
+        ).first()
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    sensors = db.query(models.Sensor).filter(models.Sensor.project_id == project.id).all()
+    sensor_names = [s.device_name for s in sensors]
+
+    data = db.query(models.SensorData)\
+        .filter(models.SensorData.device_name.in_(sensor_names))\
+        .order_by(models.SensorData.timestamp.asc())\
+        .all()
+
+    output = io.StringIO()
+    output.write('\ufeff') # Ghi BOM để Excel nhận diện chuẩn UTF-8 (tiếng Việt không bị lỗi font)
+    output.write('sep=,\n') # 👉 Cứu cánh cho các máy dùng locale Tiếng Việt/Pháp bị dồn cột
+    
+    writer = csv.writer(output)
+    writer.writerow(["Timestamp", "Device Name", "Raw Value", "Parsed Number"])
+
+    for d in data:
+        writer.writerow([
+            d.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            d.device_name,
+            d.value,
+            d.value_num if d.value_num is not None else ""
+        ])
+
+    output.seek(0)
+    
+    filename = f"export_project_{project_id}.csv"
+    headers = {
+        'Content-Disposition': f'attachment; filename="{filename}"'
+    }
+    
+    return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers=headers)
